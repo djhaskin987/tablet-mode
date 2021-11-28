@@ -1,0 +1,56 @@
+#!/usr/bin/python3
+
+import json
+import re
+from pathlib import Path
+import subprocess
+
+
+def load_config():
+    config_path = Path.home() / '.config' / 'tablet-mode' / 'config.json'
+    conf = None
+    if config_path.exists():
+        with open(str(config_path), 'r',
+                  encoding='utf-8', errors='ignore') as cf:
+            conf = json.load(cf)
+    return conf
+
+
+def switch_to(mode, conf):
+    print(f"Switching to {mode}")
+    if mode in conf['modes']:
+        commands = conf['modes'][mode]
+        for command in commands:
+            subprocess.run(command)
+
+
+def main():
+    conf = load_config()
+    find_tablet_mode = re.compile(
+            r'switch tablet-mode state (?P<state>[0-9]+)')
+    child = subprocess.Popen(
+            ["stdbuf",
+                "-oL", "-eL",
+                "libinput",
+                "debug-events",
+                "--device",
+                conf['input_device']],
+            stdout=subprocess.PIPE,
+            encoding='iso-8859-1',
+            errors='ignore'
+            )
+    while True:
+        line = child.stdout.readline()
+        if line is None:
+            break
+        search_results = find_tablet_mode.search(line)
+        if search_results:
+            state = int(search_results.group('state'))
+            if state == 0:
+                switch_to("laptop", conf)
+            elif state == 1:
+                switch_to("tablet", conf)
+
+
+if __name__ == '__main__':
+    main()

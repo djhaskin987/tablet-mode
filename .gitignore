@@ -1,0 +1,6 @@
+# Editor save files
+.#*
+.*#
+\#*
+.*.sw[a-z]
+*~
