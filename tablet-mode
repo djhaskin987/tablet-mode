@@ -28,13 +28,17 @@ def main():
     conf = load_config()
     find_tablet_mode = re.compile(
             r'switch tablet-mode state (?P<state>[0-9]+)')
+#                "stdbuf",
+#                "-oL", "-eL",
+#                "libinput",
+#                "debug-events",
+#                "--device",
+#                conf['input_device']],
     child = subprocess.Popen(
             ["stdbuf",
-                "-oL", "-eL",
+                "-oL",
                 "libinput",
-                "debug-events",
-                "--device",
-                conf['input_device']],
+                "debug-events"],
             stdout=subprocess.PIPE,
             encoding='iso-8859-1',
             errors='ignore'
